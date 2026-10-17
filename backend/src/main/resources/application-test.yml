@@ -1,0 +1,1 @@
+# Test configuration. Tests use Testcontainers, so no datasource is defined here.
