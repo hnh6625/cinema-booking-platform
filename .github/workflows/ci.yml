@@ -24,4 +24,4 @@ jobs:
         run: chmod +x mvnw
 
       - name: Build and run all test
-        run: .\mvnw -B verify
+        run: ./mvnw -B verify
