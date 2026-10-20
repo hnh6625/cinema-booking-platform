@@ -15,7 +15,7 @@ This document defines what the system does and the rules it follows. It is the i
 - **Priority:** Must (MVP cannot ship without it), Should (valuable, cut first if late), Could (only if time remains).
 - **Sprint:** the sprint in which the story is planned.
 - **Seat states:** `AVAILABLE`, `HELD`, `SOLD`.
-- **Booking states:** `PENDING`, `CONFIRMED`, `EXPIRED`, `RELEASED`, `PAYMENT_FAILED`. Transitions are defined in [state-machines.md](../../../../Downloads/state-machines.md).
+- **Booking states:** `PENDING`, `CONFIRMED`, `EXPIRED`, `RELEASED`, `PAYMENT_FAILED`. Transitions are defined in [state-machines.md](state-machines.md).
 - All timestamps are stored and exchanged in UTC (ISO-8601). Money is an integer amount in VND.
 - Business rules are referenced as `BR-xx` (section 4) and non-functional requirements as `NFR-xx` (section 5).
 
@@ -57,27 +57,29 @@ This document defines what the system does and the rules it follows. It is the i
 #### US-01: Register an account
 **Actor:** Guest | **Priority:** Must | **Sprint:** 1
 
-As a **Guest**, I want to **register with an email and a password** so that **I can book tickets**.
+As a **Guest**, I want to **register with an email, a phone number and a password** so that **I can book tickets**.
 
 Acceptance criteria
-- [ ] Registration succeeds with a valid, unused email and a valid password; the new account has the role `USER`.
+- [ ] Registration succeeds with a valid, unused email, a valid, unused phone number and a valid password; the new account has the role `USER`.
 - [ ] A duplicate email (case-insensitive) is rejected with a conflict error.
+- [ ] A duplicate phone number is rejected with a conflict error.
+- [ ] An invalid phone number is rejected with a validation error; a number in local format is stored in international format.
 - [ ] A password shorter than the minimum is rejected with a validation error.
 - [ ] The password is never stored or logged in plain text.
 
-Rules: BR-01, BR-02, BR-04
+Rules: BR-01, BR-02, BR-04, BR-35
 
 #### US-02: Log in
 **Actor:** Guest | **Priority:** Must | **Sprint:** 1
 
-As a **Guest**, I want to **log in with my email and password** so that **I can use User features**.
+As a **Guest**, I want to **log in with my email or my phone number, and my password** so that **I can use User features**.
 
 Acceptance criteria
-- [ ] Valid credentials return a short-lived access token and a refresh token.
-- [ ] Invalid credentials return the same generic error whether the email or the password is wrong.
+- [ ] Valid credentials (email or phone number, plus the password) return a short-lived access token and a refresh token.
+- [ ] Invalid credentials return the same generic error whether the identifier or the password is wrong.
 - [ ] An expired or malformed access token is rejected with `401`.
 
-Rules: BR-03, BR-32
+Rules: BR-03, BR-32, BR-36
 
 #### US-03: Protect admin functions
 **Actor:** Admin | **Priority:** Must | **Sprint:** 1
@@ -372,6 +374,8 @@ Acceptance criteria
 | BR-32 | A refresh token is valid for 7 days. |
 | BR-33 | A refresh token can be used once. Using it issues a new access token and a new refresh token and invalidates the old one (rotation). If an already used refresh token is presented again, all refresh tokens of that User are revoked. |
 | BR-34 | Refresh tokens are stored only as hashes. Logging out revokes the presented refresh token. |
+| BR-35 | A phone number identifies one account and is unique. It is stored in international format (E.164, for example `+84901234567`); numbers typed in local format (`0901234567`) are converted. The MVP accepts Vietnamese mobile numbers only. The number is not verified by SMS. |
+| BR-36 | A User logs in with an email or a phone number plus the password. The identifier is treated as an email when it contains `@`, otherwise as a phone number. Failed logins never reveal which part was wrong. |
 
 ### Catalog
 
@@ -456,4 +460,5 @@ Deliberately excluded from the MVP and candidates for a later phase:
 - Real email delivery
 - Vouchers and food or drink add-ons
 - A real payment gateway
+- Phone number verification by SMS or one-time code
 - Age verification against the User's date of birth
