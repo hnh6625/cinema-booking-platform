@@ -57,6 +57,7 @@ In `showtime_seats`: one row per (showtime, seat), created when the showtime is 
 |---|---|---|
 | id | bigint PK | |
 | email | varchar(255) | Unique, case-insensitive (BR-01) |
+| phone | varchar(16) | Unique; E.164 format such as `+84901234567` (BR-35); `CHECK` on the format |
 | password_hash | varchar(255) | BCrypt (NFR-06) |
 | role | varchar(20) | `USER` or `ADMIN` |
 | created_at | timestamptz | |
@@ -248,6 +249,7 @@ Paste into [dbdiagram.io](https://dbdiagram.io) to see the diagram. Partial-inde
 Table users {
   id bigint [pk, increment]
   email varchar(255) [not null, unique, note: 'unique ignoring case']
+  phone varchar(16) [not null, unique, note: 'E.164, for example +84901234567']
   password_hash varchar(255) [not null]
   role varchar(20) [not null, note: 'USER | ADMIN']
   created_at timestamptz [not null]
