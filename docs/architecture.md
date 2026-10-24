@@ -242,8 +242,24 @@ sequenceDiagram
 | **Idempotency** | `IdempotencyService` in `common`, used by hold and pay. Details are designed at the start of Sprint 5. |
 | **Logging** | Each request gets a correlation id included in every log line. Booking and payment state changes are logged. Passwords and tokens are never logged. |
 | **Metrics** | Micrometer counters and timers for hold success and failure and hold latency, exposed through the Actuator (NFR-09). |
-| **API style** | Versioned base path `/api/v1`, pagination per BR-31, OpenAPI generated from the code. |
+| **API style** | Versioned base path `/api/v1`, pagination per BR-31, OpenAPI generated from the code. See [API conventions](#api-conventions). |
 | **Configuration** | Spring profiles `dev`, `test`, `prod`; sensitive values only from the environment; `.env.example` documents them. |
+
+### API conventions
+
+**Base path.** Every endpoint lives under `/api/v1/<module>`, for example `POST /api/v1/auth/register` and `GET /api/v1/movies`. The `/api` prefix separates the JSON API from other routes (health checks, API documentation), so security rules can target `/api/**` in one place. The module name groups endpoints the same way the code is grouped.
+
+**Versioning in the path.** The version is part of the URL, so a breaking change can ship as `/api/v2` while `/api/v1` keeps working for existing clients. Only breaking changes create a new version; adding a field to a response does not.
+
+| Option | Why it was not chosen |
+|---|---|
+| Version in a header (media type) | Keeps URLs clean, but is harder to try in a browser, to cache, and to read in logs |
+| Query parameter (`?version=1`) | Easy to forget, and mixes versioning with filtering |
+| No versioning | Simplest, but the first breaking change affects every client at once |
+
+Path versioning duplicates routes while two versions coexist. That cost is accepted: it is small, and it is visible in the code.
+
+**Actions that are not CRUD.** Authentication operations (register, log in, refresh, log out) are modelled as actions under `/api/v1/auth/...`, because they do not map cleanly to creating, reading, updating or deleting one resource. All other endpoints follow resource-style REST.
 
 ## 7. Deployment view
 
