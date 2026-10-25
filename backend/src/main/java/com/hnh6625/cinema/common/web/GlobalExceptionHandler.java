@@ -1,5 +1,6 @@
 package com.hnh6625.cinema.common.web;
 
+import com.hnh6625.cinema.auth.exception.InvalidPhoneNumberException;
 import com.hnh6625.cinema.common.exception.ConflictException;
 import com.hnh6625.cinema.common.exception.InvalidRequestException;
 import org.springframework.http.HttpStatus;
@@ -31,5 +32,10 @@ public class GlobalExceptionHandler {
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining("; "));
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
+    }
+
+    @ExceptionHandler(InvalidPhoneNumberException.class)
+    public ProblemDetail handleInvalidPhoneNumber(InvalidPhoneNumberException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 }
