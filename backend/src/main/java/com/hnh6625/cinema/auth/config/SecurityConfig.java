@@ -11,7 +11,6 @@ import org.springframework.security.web.SecurityFilterChain;
 
 
 @Configuration
-@EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
