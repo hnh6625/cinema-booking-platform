@@ -5,3 +5,8 @@ spring:
     url: jdbc:postgresql://localhost:${DB_PORT:5432}/${DB_NAME:cinema}
     username: ${DB_USER:cinema_user}
     password: ${DB_PASSWORD:}
+
+app:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
