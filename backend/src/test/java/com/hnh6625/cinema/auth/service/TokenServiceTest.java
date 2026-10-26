@@ -2,23 +2,23 @@ package com.hnh6625.cinema.auth.service;
 
 import com.hnh6625.cinema.auth.config.JwtConfig;
 import com.hnh6625.cinema.auth.config.JwtProperties;
+import com.hnh6625.cinema.auth.entity.Role;
 import com.hnh6625.cinema.auth.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.BeanUtils;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Field;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class TokenServiceTest {
@@ -73,29 +73,26 @@ public class TokenServiceTest {
                 .isInstanceOf(JwtException.class);
     }
 
-    private User createUser() {
-        User user = BeanUtils.instantiateClass(User.class);
+    @Test
+    void createAccessToken_containsSubjectRoleAndExpiry() {
+        Instant now = Instant.now();
+        Clock clock = Clock.fixed(now, ZoneOffset.UTC);
 
-        ReflectionTestUtils.setField(user, "id", 42L);
+        TokenService tokenService = new TokenService(encoder, properties, clock);
 
-        Field roleField = ReflectionUtils.findField(User.class, "role");
-        if (roleField == null || !roleField.getType().isEnum()) {
-            throw new IllegalStateException(
-                    "Cannot find the role enum type for the field in User"
-            );
-        }
+        String token = tokenService.createAccessToken(user);
 
-        ReflectionTestUtils.setField(
-                user,
-                "role",
-                enumValue(roleField.getType(), "USER")
-        );
+        Jwt jwt = decoder.decode(token);
 
-        return user;
+        assertThat(jwt.getSubject()).isEqualTo("42");
+        assertThat(jwt.getClaimAsString("role")).isEqualTo("USER");
+        assertThat(jwt.getIssuedAt()).isEqualTo(now.truncatedTo(ChronoUnit.SECONDS));
+        assertThat(jwt.getExpiresAt()).isEqualTo(now.plus(Duration.ofMinutes(15)).truncatedTo(ChronoUnit.SECONDS));
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private static Enum<?> enumValue(Class<?> enumType, String name) {
-        return Enum.valueOf((Class) enumType, name);
+    private User createUser() {
+        User user = new User("a@x.com", "+84901234567", "hash", Role.USER, Instant.now());
+        ReflectionTestUtils.setField(user, "id", 42L);
+        return user;
     }
 }
