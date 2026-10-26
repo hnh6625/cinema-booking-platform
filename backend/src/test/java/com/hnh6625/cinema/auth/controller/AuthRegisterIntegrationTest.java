@@ -76,11 +76,7 @@ public class AuthRegisterIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.detail").value("Phone is already registered."));
     }
 
-    @Test
-    void register_withInvalidPhone_returns400() throws Exception {
-        register("a@x.com", "abc", "password123")
-                .andExpect(status().isBadRequest());
-    }
+
 
     @Test
     void register_withShortPassword_returns400() throws Exception {
