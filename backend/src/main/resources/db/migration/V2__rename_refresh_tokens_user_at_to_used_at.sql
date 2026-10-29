@@ -1,0 +1,1 @@
+ALTER TABLE refresh_tokens RENAME COLUMN user_at TO used_at;
