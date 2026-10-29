@@ -1,11 +1,15 @@
 package com.hnh6625.cinema.auth.service;
 
 import com.hnh6625.cinema.auth.PhoneNumberNormalizer;
+import com.hnh6625.cinema.auth.dto.LoginRequest;
+import com.hnh6625.cinema.auth.dto.LoginResponse;
 import com.hnh6625.cinema.auth.dto.RegisterRequest;
 import com.hnh6625.cinema.auth.dto.RegisterResponse;
 import com.hnh6625.cinema.auth.entity.Role;
 import com.hnh6625.cinema.auth.entity.User;
 import com.hnh6625.cinema.auth.exception.EmailAlreadyUsedException;
+import com.hnh6625.cinema.auth.exception.InvalidCredentialsException;
+import com.hnh6625.cinema.auth.exception.InvalidPhoneNumberException;
 import com.hnh6625.cinema.auth.exception.PhoneAlreadyUsedException;
 import com.hnh6625.cinema.auth.repository.UserRepository;
 import org.hibernate.exception.ConstraintViolationException;
@@ -15,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.util.Optional;
 
 @Service
 public class AuthService {
@@ -24,11 +29,13 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final Clock clock;
+    private final TokenService tokenService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, Clock clock) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, Clock clock, TokenService tokenService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.clock = clock;
+        this.tokenService = tokenService;
     }
 
     @Transactional
@@ -72,5 +79,26 @@ public class AuthService {
             cause = cause.getCause();
         }
         return null;
+    }
+
+    @Transactional
+    public LoginResponse login(LoginRequest request) {
+        User user = findUser(request.identifier())
+                .filter(found -> passwordEncoder.matches(request.password(),found.getPasswordHash()))
+                .orElseThrow(InvalidCredentialsException::new);
+
+        return tokenService.issueTokens(user);
+    }
+
+    private Optional<User> findUser(String identifier) {
+        String trimmed = identifier.trim();
+        if (trimmed.contains("@")) {
+            return userRepository.findByEmailIgnoreCase(trimmed);
+        }
+        try {
+            return userRepository.findByPhone(PhoneNumberNormalizer.normalize(trimmed));
+        } catch (InvalidPhoneNumberException e) {
+            return Optional.empty();
+        }
     }
 }

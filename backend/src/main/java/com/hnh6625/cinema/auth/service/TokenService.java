@@ -2,15 +2,20 @@ package com.hnh6625.cinema.auth.service;
 
 import com.hnh6625.cinema.auth.TokenHasher;
 import com.hnh6625.cinema.auth.config.JwtProperties;
+import com.hnh6625.cinema.auth.dto.LoginRequest;
+import com.hnh6625.cinema.auth.dto.LoginResponse;
 import com.hnh6625.cinema.auth.entity.RefreshToken;
 import com.hnh6625.cinema.auth.entity.User;
+import com.hnh6625.cinema.auth.exception.InvalidCredentialsException;
 import com.hnh6625.cinema.auth.repository.RefreshTokenRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.Clock;
@@ -70,5 +75,16 @@ public class TokenService {
         rfTokenRepository.save(refreshToken);
 
         return raw;
+    }
+
+    public LoginResponse issueTokens(User user) {
+        String accessToken = createAccessToken(user);
+        String refreshToken = createRefreshToken(user);
+
+        return new LoginResponse(
+                accessToken,
+                refreshToken,
+                properties.accessTokenTtl().toSeconds()
+        );
     }
 }
