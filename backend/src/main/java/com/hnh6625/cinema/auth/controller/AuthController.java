@@ -1,5 +1,7 @@
 package com.hnh6625.cinema.auth.controller;
 
+import com.hnh6625.cinema.auth.dto.LoginRequest;
+import com.hnh6625.cinema.auth.dto.LoginResponse;
 import com.hnh6625.cinema.auth.dto.RegisterRequest;
 import com.hnh6625.cinema.auth.dto.RegisterResponse;
 import com.hnh6625.cinema.auth.service.AuthService;
@@ -22,5 +24,12 @@ public class AuthController {
                                      @RequestBody
                                      RegisterRequest request) {
         return authService.register(request);
+    }
+
+    @PostMapping("/login")
+    public LoginResponse login(@Valid
+                               @RequestBody
+                               LoginRequest request) {
+        return authService.login(request);
     }
 }
