@@ -19,3 +19,9 @@ management:
     web:
       exposure:
         include: health
+
+app:
+  security:
+    jwt:
+      access-token-ttl: 15m
+      refresh-token-ttl: 7d

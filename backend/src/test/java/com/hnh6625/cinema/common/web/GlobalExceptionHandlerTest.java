@@ -30,4 +30,16 @@ public class GlobalExceptionHandlerTest {
         assertThat(result.getStatus()).isEqualTo(400);
         assertThat(result.getDetail()).isEqualTo("message");
     }
+
+    @Test
+    void hanndleUnauthorized_returns401WithMessage() {
+        GlobalExceptionHandler handler = new GlobalExceptionHandler();
+        UnauthorizedException exception = new UnauthorizedException("message");
+
+        ProblemDetail result = handler.handleUnauthorized(exception);
+
+        assertThat(result.getStatus()).isEqualTo(401);
+        assertThat(result.getDetail()).isEqualTo("message");
+
+    }
 }
