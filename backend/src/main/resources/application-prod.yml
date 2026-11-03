@@ -8,3 +8,7 @@ app:
   security:
     jwt:
       secret: ${JWT_SECRET}
+  admin:
+    email: ${ADMIN_EMAIL}
+    phone: ${ADMIN_PHONE}
+    password: ${ADMIN_PASSWORD}
