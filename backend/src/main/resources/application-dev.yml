@@ -10,3 +10,7 @@ app:
   security:
     jwt:
       secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
+  admin:
+    email: ${ADMIN_EMAIL:admin@cinema.local}
+    phone: ${ADMIN_PHONE:+84900000001}
+    password: ${ADMIN_PASSWORD:admin-dev-password}
