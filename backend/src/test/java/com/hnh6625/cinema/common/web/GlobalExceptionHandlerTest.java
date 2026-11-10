@@ -3,6 +3,7 @@ package com.hnh6625.cinema.common.web;
 
 import com.hnh6625.cinema.common.exception.ConflictException;
 import com.hnh6625.cinema.common.exception.InvalidRequestException;
+import com.hnh6625.cinema.common.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ProblemDetail;
 
@@ -32,7 +33,7 @@ public class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void hanndleUnauthorized_returns401WithMessage() {
+    void handleUnauthorized_returns401WithMessage() {
         GlobalExceptionHandler handler = new GlobalExceptionHandler();
         UnauthorizedException exception = new UnauthorizedException("message");
 
@@ -41,5 +42,16 @@ public class GlobalExceptionHandlerTest {
         assertThat(result.getStatus()).isEqualTo(401);
         assertThat(result.getDetail()).isEqualTo("message");
 
+    }
+
+    @Test
+    void handleNotFound_returns404WithMessage() {
+        GlobalExceptionHandler handler = new GlobalExceptionHandler();
+        NotFoundException exception = new NotFoundException("message");
+
+        ProblemDetail result = handler.handleNotFound(exception);
+
+        assertThat(result.getStatus()).isEqualTo(404);
+        assertThat(result.getDetail()).isEqualTo("message");
     }
 }
