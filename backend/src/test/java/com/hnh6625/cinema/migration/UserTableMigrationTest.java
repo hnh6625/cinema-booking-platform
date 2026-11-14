@@ -1,5 +1,6 @@
-package com.hnh6625.cinema;
+package com.hnh6625.cinema.migration;
 
+import com.hnh6625.cinema.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
