@@ -46,7 +46,6 @@ public class GenreRepositoryTest extends AbstractIntegrationTest {
         Genre comedy = repo.save(new Genre("Comedy"));
 
         boolean exists = repo.existsByNameIgnoreCaseAndIdNot("Action", comedy.getId());
-
         assertThat(exists).isTrue();
     }
 }
