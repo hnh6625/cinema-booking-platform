@@ -16,7 +16,7 @@ public class GenreTableMigrationTest extends AbstractIntegrationTest {
     private JdbcTemplate jdbc;
 
     private void insertGenre(String name) {
-        jdbc.update("INSERT INTO genres (name) VALUES (?)", name);
+        jdbc.update("insert into genres (name) values (?)", name);
     }
 
     @Test
