@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Transactional
-public class GenreControlllerTest extends AbstractIntegrationTest {
+public class GenreControllerTest extends AbstractIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
