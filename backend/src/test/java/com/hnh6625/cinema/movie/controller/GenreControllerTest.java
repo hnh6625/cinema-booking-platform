@@ -5,8 +5,12 @@ import com.hnh6625.cinema.auth.entity.Role;
 import com.hnh6625.cinema.auth.entity.User;
 import com.hnh6625.cinema.auth.repository.UserRepository;
 import com.hnh6625.cinema.auth.service.TokenService;
+import com.hnh6625.cinema.movie.entity.AgeRating;
 import com.hnh6625.cinema.movie.entity.Genre;
+import com.hnh6625.cinema.movie.entity.Movie;
+import com.hnh6625.cinema.movie.entity.MovieStatus;
 import com.hnh6625.cinema.movie.repository.GenreRepository;
+import com.hnh6625.cinema.movie.repository.MovieRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -17,6 +21,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -24,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Transactional
-public class GenreControlllerTest extends AbstractIntegrationTest {
+public class GenreControllerTest extends AbstractIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -35,6 +40,8 @@ public class GenreControlllerTest extends AbstractIntegrationTest {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private TokenService tokenService;
+    @Autowired
+    private MovieRepository movieRepository;
 
     private String tokenFor(Role role) {
         User user = userRepository.save(new User("u@x.com", "+84901111111",
@@ -52,6 +59,18 @@ public class GenreControlllerTest extends AbstractIntegrationTest {
             request.header("Authorization", "Bearer " + token);
         }
         return mockMvc.perform(request);
+    }
+
+    private Movie newMovie(Set<Genre> genres, AgeRating ageRating) {
+        return new Movie(
+                "Avengers",
+                "Hero movie",
+                120,
+                ageRating,
+                MovieStatus.NOW_SHOWING,
+                genres,
+                Instant.now()
+        );
     }
 
     @Test
@@ -129,5 +148,18 @@ public class GenreControlllerTest extends AbstractIntegrationTest {
                 .andExpect(status().isNoContent());
 
         assertThat(genreRepository.findById(id)).isEmpty();
+    }
+
+    @Test
+    void deleteGenre_whenUsedByMovie_returns409() throws Exception {
+        Genre action = genreRepository.save(new Genre("Action"));
+        Set<Genre> genres = Set.of(action);
+        Movie savedMovie = movieRepository.save(newMovie(genres,AgeRating.T13));
+        String token = tokenFor(Role.ADMIN);
+
+        mockMvc.perform(delete("/api/v1/genres/" + action.getId())
+                .header("Authorization","Bearer " + token))
+                .andExpect(status().isConflict());
+        assertThat(genreRepository.findById(action.getId())).isPresent();
     }
 }

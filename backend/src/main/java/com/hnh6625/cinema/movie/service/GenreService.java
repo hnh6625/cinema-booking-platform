@@ -3,9 +3,11 @@ package com.hnh6625.cinema.movie.service;
 import com.hnh6625.cinema.movie.dto.GenreRequest;
 import com.hnh6625.cinema.movie.dto.GenreResponse;
 import com.hnh6625.cinema.movie.entity.Genre;
+import com.hnh6625.cinema.movie.exception.GenreInUseException;
 import com.hnh6625.cinema.movie.exception.GenreNameAlreadyExistsException;
 import com.hnh6625.cinema.movie.exception.GenreNotFoundException;
 import com.hnh6625.cinema.movie.repository.GenreRepository;
+import com.hnh6625.cinema.movie.repository.MovieRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,9 +18,11 @@ import java.util.List;
 @Service
 public class GenreService {
     private final GenreRepository genreRepository;
+    private final MovieRepository movieRepository;
 
-    public GenreService(GenreRepository genreRepository) {
+    public GenreService(GenreRepository genreRepository, MovieRepository movieRepository) {
         this.genreRepository = genreRepository;
+        this.movieRepository = movieRepository;
     }
 
     public GenreResponse create(GenreRequest request) {
@@ -42,6 +46,9 @@ public class GenreService {
 
     public void delete(Long id) {
         Genre genre = genreRepository.findById(id).orElseThrow(() -> new GenreNotFoundException(id));
+        if (movieRepository.existsByGenres_Id(id)) {
+            throw new GenreInUseException();
+        }
         genreRepository.delete(genre);
     }
 
