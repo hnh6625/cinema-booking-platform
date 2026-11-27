@@ -3,8 +3,10 @@ package com.hnh6625.cinema.cinema.service;
 import com.hnh6625.cinema.cinema.dto.CinemaRequest;
 import com.hnh6625.cinema.cinema.dto.CinemaResponse;
 import com.hnh6625.cinema.cinema.entity.Cinema;
+import com.hnh6625.cinema.cinema.exception.CinemaHasRoomsException;
 import com.hnh6625.cinema.cinema.exception.CinemaNotFoundException;
 import com.hnh6625.cinema.cinema.repository.CinemaRepository;
+import com.hnh6625.cinema.cinema.repository.RoomRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,12 +26,14 @@ import static org.mockito.Mockito.*;
 public class CinemaServiceTest {
     @Mock
     private CinemaRepository cinemaRepository;
+    @Mock
+    private RoomRepository roomRepository;
 
     private CinemaService service;
 
     @BeforeEach
     void setUp() {
-        service = new CinemaService(cinemaRepository);
+        service = new CinemaService(cinemaRepository, roomRepository);
     }
 
     private Cinema cinemaWithId(Long id) {
@@ -79,16 +83,30 @@ public class CinemaServiceTest {
 
         assertThatThrownBy(() -> service.delete(5L)).isInstanceOf(CinemaNotFoundException.class);
 
+        verifyNoInteractions(roomRepository);;
         verify(cinemaRepository, never()).delete(any(Cinema.class));
     }
 
     @Test
     void delete_whenExist_deletesIt() {
         Cinema cinema = cinemaWithId(5L);
+        when(roomRepository.existsByCinemaId(5L)).thenReturn(false);
         when(cinemaRepository.findById(5L)).thenReturn(Optional.of(cinema));
 
         service.delete(5L);
 
         verify(cinemaRepository).delete(cinema);
+    }
+
+    @Test
+    void delete_whenCinemaHasRooms_throwsConflictAndDoesNotDelete() {
+        Cinema cinema = cinemaWithId(5L);
+        when(cinemaRepository.findById(5L)).thenReturn(Optional.of(cinema));
+        when(roomRepository.existsByCinemaId(5L)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.delete(5L))
+                .isInstanceOf(CinemaHasRoomsException.class);
+
+        verify(cinemaRepository, never()).delete(any(Cinema.class));
     }
 }
