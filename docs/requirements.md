@@ -126,7 +126,6 @@ As an **Admin**, I want to **create, rename and delete genres** so that **movies
 
 Acceptance criteria
 - [ ] Genre names are unique.
-- [ ] A genre that is still assigned to a movie cannot be deleted.
 
 Rules: BR-07
 
@@ -139,6 +138,8 @@ Acceptance criteria
 - [ ] A movie has a title, description, duration, age rating, status and one or more genres.
 - [ ] Invalid age ratings, a missing genre or a non-positive duration are rejected.
 - [ ] A movie that has showtimes cannot be deleted; it can be set to `ENDED` instead.
+- [ ] A genre that is still assigned to a movie cannot be deleted.
+
 
 Rules: BR-05, BR-06, BR-08
 
@@ -149,7 +150,9 @@ As an **Admin**, I want to **create, update and remove cinemas** so that **showt
 
 Acceptance criteria
 - [ ] A cinema has a name and an address.
-- [ ] A cinema with rooms cannot be deleted.
+- [ ] A cinema with a blank name or address is rejected.
+- [ ] Only an Admin can create, update or remove a cinema.
+- [ ] Removing a cinema that does not exist returns "not found".
 
 #### US-07: Manage rooms and seat layout
 **Actor:** Admin | **Priority:** Must | **Sprint:** 2
@@ -160,6 +163,7 @@ Acceptance criteria
 - [ ] A room belongs to one cinema and has a unique name within it.
 - [ ] A seat is unique by row and number within its room and has a type (`STANDARD` or `VIP`).
 - [ ] A room that has showtimes cannot be deleted, and its seat layout cannot change.
+- [ ] A cinema with rooms cannot be deleted.
 
 Rules: BR-11
 
@@ -173,6 +177,7 @@ Acceptance criteria
 - [ ] A showtime that overlaps another in the same room (including the cleaning buffer) is rejected.
 - [ ] A showtime cannot start in the past or use an `ENDED` movie.
 - [ ] Creating a showtime makes every seat of the room available for that showtime.
+- [ ] A movie that has showtimes cannot be deleted.
 
 Rules: BR-08, BR-09, BR-10
 
