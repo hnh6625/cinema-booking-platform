@@ -3,8 +3,10 @@ package com.hnh6625.cinema.cinema.service;
 import com.hnh6625.cinema.cinema.dto.CinemaRequest;
 import com.hnh6625.cinema.cinema.dto.CinemaResponse;
 import com.hnh6625.cinema.cinema.entity.Cinema;
+import com.hnh6625.cinema.cinema.exception.CinemaHasRoomsException;
 import com.hnh6625.cinema.cinema.exception.CinemaNotFoundException;
 import com.hnh6625.cinema.cinema.repository.CinemaRepository;
+import com.hnh6625.cinema.cinema.repository.RoomRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,9 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class CinemaService {
     private final CinemaRepository cinemaRepository;
+    private final RoomRepository roomRepository;
 
-    public CinemaService(CinemaRepository cinemaRepository) {
+    public CinemaService(CinemaRepository cinemaRepository, RoomRepository roomRepository) {
         this.cinemaRepository = cinemaRepository;
+        this.roomRepository = roomRepository;
     }
 
     public CinemaResponse create(CinemaRequest request) {
@@ -31,6 +35,9 @@ public class CinemaService {
 
     public void delete(Long id) {
         Cinema cinema = findCinema(id);
+        if(roomRepository.existsByCinemaId(id)) {
+            throw new CinemaHasRoomsException(id);
+        }
         cinemaRepository.delete(cinema);
     }
 

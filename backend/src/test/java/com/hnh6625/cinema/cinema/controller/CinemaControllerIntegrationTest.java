@@ -6,7 +6,9 @@ import com.hnh6625.cinema.auth.entity.User;
 import com.hnh6625.cinema.auth.repository.UserRepository;
 import com.hnh6625.cinema.auth.service.TokenService;
 import com.hnh6625.cinema.cinema.entity.Cinema;
+import com.hnh6625.cinema.cinema.entity.Room;
 import com.hnh6625.cinema.cinema.repository.CinemaRepository;
+import com.hnh6625.cinema.cinema.repository.RoomRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,8 @@ public class CinemaControllerIntegrationTest extends AbstractIntegrationTest {
     private TokenService tokenService;
     @Autowired
     private EntityManager entityManager;
+    @Autowired
+    private RoomRepository roomRepository;
 
     private String tokenFor(Role role) {
         User user = userRepository.save(new User("u@x.com", "+84901111111",
@@ -146,5 +150,18 @@ public class CinemaControllerIntegrationTest extends AbstractIntegrationTest {
         mockMvc.perform(delete("/api/v1/cinemas/999")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteCinema_whenItHasRooms_returns409AndCinemaRemains() throws Exception {
+        Cinema cinema = cinemaRepository.save(new Cinema("CGV", "Vo Van Van"));
+        roomRepository.save(new Room(cinema, "Room 1"));
+        String token = tokenFor(Role.ADMIN);
+
+        mockMvc.perform(delete("/api/v1/cinemas/" + cinema.getId())
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isConflict());
+
+        assertThat(cinemaRepository.findById(cinema.getId())).isPresent();
     }
 }
